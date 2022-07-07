@@ -383,13 +383,17 @@
 #ifdef FILAMENTCHANGEENABLE
 #define FILAMENTCHANGE_XPOS 211
 #define FILAMENTCHANGE_YPOS 0
-#define FILAMENTCHANGE_ZADD 2
+// jamelang: change from 2 to 50
+//#define FILAMENTCHANGE_ZADD 2
+#define FILAMENTCHANGE_ZADD 44
 #define FILAMENTCHANGE_FIRSTRETRACT -2
 #define FILAMENTCHANGE_FINALRETRACT -80
 
 #define FILAMENTCHANGE_FIRSTFEED 70 //E distance in mm for fast filament loading sequence used used in filament change (M600)
 #define FILAMENTCHANGE_FINALFEED 25 //E distance in mm for slow filament loading sequence used used in filament change (M600) and filament load (M701) 
-#define FILAMENTCHANGE_RECFEED 5
+// jamelang: change from 5 to 0
+//#define FILAMENTCHANGE_RECFEED 5
+#define FILAMENTCHANGE_RECFEED 0
 
 #define FILAMENTCHANGE_XYFEED 50
 #define FILAMENTCHANGE_EFEED_FIRST 20 // feedrate in mm/s for fast filament loading sequence used in filament change (M600)

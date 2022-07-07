@@ -1063,7 +1063,11 @@ void lcd_return_to_status()
 //! @brief Pause print, disable nozzle heater, move to park position, send host action "paused"
 void lcd_pause_print()
 {
-    stop_and_save_print_to_ram(0.0, -default_retraction);
+	// jamelang: wait until the user presses a button
+	beep_until_user_clicks_button(/* number_of_beeps_per_period= */ 2);
+	// jamelang: change z_move from 0, hoping to get the extruder out of the way for magnets
+    //stop_and_save_print_to_ram(0.0, -default_retraction);
+    stop_and_save_print_to_ram(70.0, -default_retraction);
     lcd_return_to_status();
     isPrintPaused = true;
     if (LcdCommands::Idle == lcd_commands_type) {

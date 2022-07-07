@@ -8016,7 +8016,10 @@ Sigma_Exit:
         }
         else
         {
-			z_shift = gcode_M600_filament_change_z_shift<uint8_t>();
+      z_shift = 190- current_position[Z_AXIS];
+      if (100.f < z_shift) {
+        z_shift = 100.f;
+      }
         }
 		//Move XY to side
         if(code_seen('X'))
@@ -8084,6 +8087,15 @@ Sigma_Exit:
     */
     case 603: {
         lcd_print_stop();
+    }
+    break;
+
+    /*!
+    ### jamelang's made-up code to beep until the user presses the button, to be used at the end of a print.
+    */
+    case 604: {
+		  st_synchronize();
+      beep_until_user_clicks_button(4);
     }
     break;
 
@@ -11467,6 +11479,13 @@ void stop_and_save_print_to_ram(float z_move, float e_move)
       saved_feedrate2 = feedrate;
   }
 
+  // jamelang: make sure that we don't go too high when we're parking
+  float max_z_move_allowed = 180 - saved_pos[Z_AXIS];
+  float adjusted_z_move = z_move;
+  if (max_z_move_allowed < z_move) {
+    adjusted_z_move = max_z_move_allowed;
+  }
+
 	planner_abort_hard(); //abort printing
 
 	memcpy(saved_pos, current_position, sizeof(saved_pos));
@@ -11484,7 +11503,7 @@ void stop_and_save_print_to_ram(float z_move, float e_move)
   // We may have missed a stepper timer interrupt. Be safe than sorry, reset the stepper timer before re-enabling interrupts.
   st_reset_timer();
 	sei();
-	if ((z_move != 0) || (e_move != 0)) { // extruder or z move
+	if ((adjusted_z_move > 0) || (e_move != 0)) { // extruder or z move
 #if 1
     // Rather than calling plan_buffer_line directly, push the move into the command queue so that
     // the caller can continue processing. This is used during powerpanic to save the state as we
@@ -11507,10 +11526,10 @@ void stop_and_save_print_to_ram(float z_move, float e_move)
         enquecommand(buf, false);
     }
 
-    if(z_move)
+    if(adjusted_z_move > 0)
     {
         // Then lift Z axis
-        sprintf_P(buf, PSTR("G1 Z%-0.3f F%-0.3f"), saved_pos[Z_AXIS] + z_move, homing_feedrate[Z_AXIS]);
+        sprintf_P(buf, PSTR("G1 Z%-0.3f F%-0.3f"), saved_pos[Z_AXIS] + adjusted_z_move, homing_feedrate[Z_AXIS]);
         enquecommand(buf, false);
     }
 
@@ -11518,7 +11537,7 @@ void stop_and_save_print_to_ram(float z_move, float e_move)
     // in the command queue is not the original command, but a new one, so it should not be removed from the queue.
     repeatcommand_front();
 #else
-		plan_buffer_line(saved_pos[X_AXIS], saved_pos[Y_AXIS], saved_pos[Z_AXIS] + z_move, saved_pos[E_AXIS] + e_move, homing_feedrate[Z_AXIS], active_extruder);
+		plan_buffer_line(saved_pos[X_AXIS], saved_pos[Y_AXIS], saved_pos[Z_AXIS] + adjusted_z_move, saved_pos[E_AXIS] + e_move, homing_feedrate[Z_AXIS], active_extruder);
     st_synchronize(); //wait moving
     memcpy(current_position, saved_pos, sizeof(saved_pos));
     set_destination_to_current();
@@ -11800,6 +11819,47 @@ void M600_wait_for_user(float HotendTempBckp) {
 
 		}
 		WRITE(BEEPER, LOW);
+}
+
+//! @brief Wait for the user to hit the button twice before proceeding
+//!
+void beep_until_user_clicks_button(int number_of_beeps_per_period) {
+	KEEPALIVE_STATE(PAUSED_FOR_USER);
+
+	int counter_beep = 0;
+	lcd_display_message_fullscreen_P(_i("Press to stop beeping"));
+	float previous_hotend_target_temperature = degTargetHotend(active_extruder);
+	setAllTargetHotends(0);
+	st_synchronize();
+
+  int beep_length = 80;
+  int length_between_beeps = 160;
+  int beep_unit_length = beep_length + length_between_beeps;
+
+  SET_OUTPUT(BEEPER);
+	while (!lcd_clicked()) {
+		manage_heater();
+		manage_inactivity(true);
+
+		if (counter_beep == 5000) {
+			counter_beep = 0;
+		}
+    int counter_within_unit = counter_beep % beep_unit_length;
+    int beep_unit_number = counter_beep / beep_unit_length;
+    if (beep_unit_number < number_of_beeps_per_period) {
+		  if (counter_within_unit == 0) {
+		  	WRITE(BEEPER, HIGH);
+		  }
+		  if (counter_within_unit == beep_length) {
+		  	WRITE(BEEPER, LOW);
+		  }
+		}
+		counter_beep++;
+		delay_keep_alive(4);
+  }
+	WRITE(BEEPER, LOW);
+	setTargetHotend(previous_hotend_target_temperature, active_extruder);
+	lcd_update_enable(true);
 }
 
 void M600_load_filament_movements()

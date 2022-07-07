@@ -16,8 +16,8 @@ extern uint16_t nPrinterType;
 extern PGM_P sPrinterName;
 
 // Firmware version
-#define FW_MAJOR 3
-#define FW_MINOR 10
+#define FW_MAJOR 10
+#define FW_MINOR 1
 #define FW_REVISION 1
 //#define FW_FLAVOR RC      //uncomment if DEBUG, DEVEL, APLHA, BETA or RC
 //#define FW_FLAVERSION 1     //uncomment if FW_FLAVOR is defined and versioning is needed.
