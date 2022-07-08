@@ -1,0 +1,11 @@
+progmem.sh started
+ progmem.sh (0) - checking input files
+ progmem.sh (1) - removing output files
+ progmem.sh (2) - listing symbol table of section '.text'
+ progmem.sh (3) - calculating start and end address
+  START address = 0x00003100
+  STOP  address = 0x0000552f
+ progmem.sh (4) - extracting string data from elf
+ progmem.sh (5) - preparing string data
+ progmem.sh (6) - converting string data
+progmem.sh finished
