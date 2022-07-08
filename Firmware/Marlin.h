@@ -498,6 +498,7 @@ void M600_load_filament();
 void M600_load_filament_movements();
 void M600_wait_for_user(float HotendTempBckp);
 void beep_until_user_clicks_button(int number_of_beeps_per_period);
+void perform_magnet_pause();
 void M600_check_state(float nozzle_temp);
 void load_filament_final_feed();
 void marlin_wait_for_click();

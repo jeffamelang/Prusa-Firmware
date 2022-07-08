@@ -3798,11 +3798,11 @@ static void gcode_M600(bool automatic, float x_position, float y_position, float
 
     //Move XY back
     plan_buffer_line(lastpos[X_AXIS], lastpos[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS],
-            FILAMENTCHANGE_XYFEED, active_extruder);
+            FILAMENTCHANGE_XYFEED*3, active_extruder);
     st_synchronize();
     //Move Z back
     plan_buffer_line(lastpos[X_AXIS], lastpos[Y_AXIS], lastpos[Z_AXIS], current_position[E_AXIS],
-            FILAMENTCHANGE_ZFEED, active_extruder);
+            FILAMENTCHANGE_ZFEED*1.5, active_extruder);
     st_synchronize();
 
     //Set E position to original
@@ -8016,9 +8016,16 @@ Sigma_Exit:
         }
         else
         {
+          // jamelang
+      // calculate how far we have to go to 190, an arbitrary number
       z_shift = 190- current_position[Z_AXIS];
-      if (100.f < z_shift) {
-        z_shift = 100.f;
+      // don't let z_shift actually go _down_, which rams the part.
+      if (z_shift < 0) {
+        z_shift = 0;
+      }
+      // we probably don't have to go up more than like 50
+      if (50.f < z_shift) {
+        z_shift = 50.f;
       }
         }
 		//Move XY to side
@@ -8096,6 +8103,18 @@ Sigma_Exit:
     case 604: {
 		  st_synchronize();
       beep_until_user_clicks_button(4);
+    }
+    break;
+
+    /*!
+    ### jamelang's made-up code to wait for magnets to be inserted.
+    */
+    case 605: {
+		  st_synchronize();
+      // I don't know what these two do, but 601 does it, so it sounds like I should
+      ClearToSend(); //send OK even before the command finishes executing because we want to make sure it is not skipped because of cmdqueue_pop_front();
+      cmdqueue_pop_front(); //trick because we want skip this command (M601) after restore
+      perform_magnet_pause();
     }
     break;
 
@@ -11481,6 +11500,9 @@ void stop_and_save_print_to_ram(float z_move, float e_move)
 
   // jamelang: make sure that we don't go too high when we're parking
   float max_z_move_allowed = 180 - saved_pos[Z_AXIS];
+  if (max_z_move_allowed < 0) {
+    max_z_move_allowed = 0;
+  }
   float adjusted_z_move = z_move;
   if (max_z_move_allowed < z_move) {
     adjusted_z_move = max_z_move_allowed;
@@ -11821,7 +11843,140 @@ void M600_wait_for_user(float HotendTempBckp) {
 		WRITE(BEEPER, LOW);
 }
 
-//! @brief Wait for the user to hit the button twice before proceeding
+void do_blocking_move_to_z_first(float x, float y, float z) {
+    current_position[Z_AXIS] = z;
+    plan_buffer_line_curposXYZE(homing_feedrate[Z_AXIS]);
+    st_synchronize();
+
+    current_position[X_AXIS] = x;
+    current_position[Y_AXIS] = y;
+    plan_buffer_line_curposXYZE(homing_feedrate[X_AXIS]/3);
+    st_synchronize();
+}
+
+void do_blocking_move_to_z_last(float x, float y, float z) {
+    current_position[X_AXIS] = x;
+    current_position[Y_AXIS] = y;
+    plan_buffer_line_curposXYZE(homing_feedrate[X_AXIS]/3);
+    st_synchronize();
+
+    current_position[Z_AXIS] = z;
+    plan_buffer_line_curposXYZE(homing_feedrate[Z_AXIS]);
+    st_synchronize();
+}
+
+//! @brief Do a magnet pause
+//!
+//! Stages:
+//! 0: move the extruder up and to a convenient spot.
+//! 1: beeping, waiting for user to hit the button. hot end is cooling.
+//! 2: hot end is heating, not beeping anymore. displays temperature, beeps when reaches target temperature. wait for user to hit the button
+//! 3: extrude out a little bit. prompts user to clean the nozzle. beeping. wait for user to hit the button
+//! 4: move extruder back to its starting position.
+void perform_magnet_pause() {
+		KEEPALIVE_STATE(PAUSED_FOR_USER);
+
+		lcd_display_message_fullscreen_P(_i("Preparing for magnets"));
+    // Start cooling off
+	  float previous_hotend_target_temperature = degTargetHotend(active_extruder);
+	  setAllTargetHotends(0);
+	  st_synchronize();
+    // Remember where the extruder started
+	  memcpy(saved_pos, current_position, sizeof(saved_pos));
+    // Calculate a z parking height
+    float min_z_parking_height = saved_pos[Z_AXIS] + 2;
+    float target_z_parking_height = saved_pos[Z_AXIS] + 70;
+    float max_z_parking_height = 210;
+    float z_parking_height = target_z_parking_height;
+    if (z_parking_height > max_z_parking_height) {
+      z_parking_height = max_z_parking_height;
+    }
+    if (z_parking_height < min_z_parking_height) {
+      z_parking_height = min_z_parking_height;
+    }
+    // Move the extruder to a convenient spot
+		do_blocking_move_to_z_first(10, 200, z_parking_height);
+
+		int counter_beep = 0;
+    int beep_length = 80;
+    int length_between_beeps = 160;
+    int number_of_beeps_per_period = 2;
+    int beep_unit_length = beep_length + length_between_beeps;
+		uint8_t user_interaction_stage = 1;
+    bool stage_2_needs_to_beep = false;
+    bool stage_2_has_beeped_already = false;
+    bool stage_2_has_reached_target_temperature = false;
+		lcd_display_message_fullscreen_P(_i("Press the button to stop beeping and load magnets"));
+		while (!(user_interaction_stage == 3 && lcd_clicked())){
+			manage_heater();
+			manage_inactivity(true);
+
+		  if (counter_beep == 5000) {
+		  	counter_beep = 0;
+		  }
+      // we only beep in some stages
+      if (user_interaction_stage == 1 || (user_interaction_stage == 2 && stage_2_needs_to_beep && !stage_2_has_beeped_already) || user_interaction_stage == 3) {
+        int counter_within_unit = counter_beep % beep_unit_length;
+        int beep_unit_number = counter_beep / beep_unit_length;
+        if (beep_unit_number < number_of_beeps_per_period) {
+		      if (counter_within_unit == 0) {
+		      	WRITE(BEEPER, HIGH);
+		      }
+		      if (counter_within_unit == beep_length) {
+            if (user_interaction_stage == 2) {
+              stage_2_needs_to_beep = false;
+              stage_2_has_beeped_already = true;
+            }
+		      	WRITE(BEEPER, LOW);
+		      }
+		    }
+		  }
+			counter_beep++;
+			
+			switch (user_interaction_stage) {
+			case 1:
+				if (lcd_clicked()) {
+					setTargetHotend(previous_hotend_target_temperature, active_extruder);
+	        st_synchronize();
+					lcd_wait_for_heater();
+				  lcd_set_cursor(1, 4);
+				  lcd_printf_P(PSTR("%3d"), (int16_t)degHotend(active_extruder));
+					user_interaction_stage = 2;
+				}
+				break;
+			case 2:
+				if (fabs(degTargetHotend(active_extruder) - degHotend(active_extruder)) < 1) { 
+          stage_2_has_reached_target_temperature = true;
+          if (!stage_2_needs_to_beep) {
+		        lcd_display_message_fullscreen_P(_i("Press the button to extrude some filament"));
+            stage_2_needs_to_beep = true;
+          }
+				  if (lcd_clicked()) {
+		        lcd_display_message_fullscreen_P(_i("Remove extruded filament and press the button"));
+					  user_interaction_stage = 3;
+            // Start extruding some filament
+            current_position[E_AXIS] += 10;
+            plan_buffer_line_curposXYZE(2);
+          }
+				} 
+        if (!stage_2_has_reached_target_temperature) {
+				  lcd_set_cursor(1, 4);
+				  lcd_printf_P(PSTR("%3d"), (int16_t)degHotend(active_extruder));
+        }
+				break;
+			}
+		  delay_keep_alive(4);
+		}
+		WRITE(BEEPER, LOW);
+		user_interaction_stage = 4;
+		lcd_display_message_fullscreen_P(_i("Resuming print"));
+    // Move back to starting position
+    do_blocking_move_to_z_last(saved_pos[X_AXIS], saved_pos[Y_AXIS], saved_pos[Z_AXIS]);
+    //lcd_return_to_status();
+	  lcd_update_enable(true);
+}
+
+//! @brief Wait for the user to hit the button before proceeding
 //!
 void beep_until_user_clicks_button(int number_of_beeps_per_period) {
 	KEEPALIVE_STATE(PAUSED_FOR_USER);
