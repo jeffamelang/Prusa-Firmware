@@ -8018,10 +8018,10 @@ Sigma_Exit:
         {
           // jamelang
       // calculate how far we have to go to 190, an arbitrary number
-      z_shift = 190- current_position[Z_AXIS];
+      z_shift = 190.f- current_position[Z_AXIS];
       // don't let z_shift actually go _down_, which rams the part.
-      if (z_shift < 0) {
-        z_shift = 0;
+      if (z_shift < 2) {
+        z_shift = 2;
       }
       // we probably don't have to go up more than like 50
       if (50.f < z_shift) {
@@ -11886,7 +11886,7 @@ void perform_magnet_pause() {
     // Calculate a z parking height
     float min_z_parking_height = saved_pos[Z_AXIS] + 2;
     float target_z_parking_height = saved_pos[Z_AXIS] + 70;
-    float max_z_parking_height = 210;
+    float max_z_parking_height = 200;
     float z_parking_height = target_z_parking_height;
     if (z_parking_height > max_z_parking_height) {
       z_parking_height = max_z_parking_height;
