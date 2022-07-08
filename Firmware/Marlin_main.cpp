@@ -11769,6 +11769,7 @@ void M600_wait_for_user(float HotendTempBckp) {
 		KEEPALIVE_STATE(PAUSED_FOR_USER);
 
 		int counterBeep = 0;
+    int beep_length = 40;
 		unsigned long waiting_start_time = _millis();
 		uint8_t wait_for_user_state = 0;
 		lcd_display_message_fullscreen_P(_T(MSG_PRESS_TO_UNLOAD));
@@ -11779,7 +11780,7 @@ void M600_wait_for_user(float HotendTempBckp) {
 			manage_inactivity(true);
 
 			#if BEEPER > 0
-			if (counterBeep == 500) {
+			if (counterBeep == 5000) {
 				counterBeep = 0;
 			}
 			SET_OUTPUT(BEEPER);
@@ -11790,7 +11791,7 @@ void M600_wait_for_user(float HotendTempBckp) {
 					WRITE(BEEPER, HIGH);
 				}
 			}
-			if (counterBeep == 20) {
+			if (counterBeep == beep_length) {
 				WRITE(BEEPER, LOW);
 			}
 				
@@ -11829,7 +11830,7 @@ void M600_wait_for_user(float HotendTempBckp) {
 					wait_for_user_state = 0;
 				}
 				else {
-					counterBeep = 20; //beeper will be inactive during waiting for nozzle preheat
+					counterBeep = beep_length; //beeper will be inactive during waiting for nozzle preheat
 					lcd_set_cursor(1, 4);
 					lcd_printf_P(PSTR("%3d"), (int16_t)degHotend(active_extruder));
 				}
@@ -11843,7 +11844,7 @@ void M600_wait_for_user(float HotendTempBckp) {
 
 void do_blocking_move_to_z_first(float x, float y, float z) {
     current_position[Z_AXIS] = z;
-    plan_buffer_line_curposXYZE(homing_feedrate[Z_AXIS]);
+    plan_buffer_line_curposXYZE(homing_feedrate[Z_AXIS]*1.5);
     st_synchronize();
 
     current_position[X_AXIS] = x;
@@ -11859,7 +11860,7 @@ void do_blocking_move_to_z_last(float x, float y, float z) {
     st_synchronize();
 
     current_position[Z_AXIS] = z;
-    plan_buffer_line_curposXYZE(homing_feedrate[Z_AXIS]);
+    plan_buffer_line_curposXYZE(homing_feedrate[Z_AXIS]*1.5);
     st_synchronize();
 }
 
@@ -11878,6 +11879,8 @@ void perform_magnet_pause() {
     // Start cooling off
 	  float previous_hotend_target_temperature = degTargetHotend(active_extruder);
 	  setAllTargetHotends(0);
+    int previous_fan_speed = fanSpeed;
+    fanSpeed = 0;
 	  st_synchronize();
     // Remember where the extruder started
 	  memcpy(saved_pos, current_position, sizeof(saved_pos));
@@ -11901,10 +11904,9 @@ void perform_magnet_pause() {
     int number_of_beeps_per_period = 2;
     int beep_unit_length = beep_length + length_between_beeps;
 		uint8_t user_interaction_stage = 1;
-    bool stage_2_needs_to_beep = false;
     bool stage_2_has_beeped_already = false;
     bool stage_2_has_reached_target_temperature = false;
-		lcd_display_message_fullscreen_P(_i("Press the button to stop beeping and load magnets"));
+		lcd_display_message_fullscreen_P(_i("Press the button to stop beeping"));
 		while (!(user_interaction_stage == 3 && lcd_clicked())){
 			manage_heater();
 			manage_inactivity(true);
@@ -11913,7 +11915,7 @@ void perform_magnet_pause() {
 		  	counter_beep = 0;
 		  }
       // we only beep in some stages
-      if (user_interaction_stage == 1 || (user_interaction_stage == 2 && stage_2_needs_to_beep && !stage_2_has_beeped_already) || user_interaction_stage == 3) {
+      if (user_interaction_stage == 1 || (user_interaction_stage == 2 && stage_2_has_reached_target_temperature && !stage_2_has_beeped_already) || user_interaction_stage == 3) {
         int counter_within_unit = counter_beep % beep_unit_length;
         int beep_unit_number = counter_beep / beep_unit_length;
         if (beep_unit_number < number_of_beeps_per_period) {
@@ -11922,7 +11924,6 @@ void perform_magnet_pause() {
 		      }
 		      if (counter_within_unit == beep_length) {
             if (user_interaction_stage == 2) {
-              stage_2_needs_to_beep = false;
               stage_2_has_beeped_already = true;
             }
 		      	WRITE(BEEPER, LOW);
@@ -11936,31 +11937,30 @@ void perform_magnet_pause() {
 				if (lcd_clicked()) {
 					setTargetHotend(previous_hotend_target_temperature, active_extruder);
 	        st_synchronize();
-					lcd_wait_for_heater();
-				  lcd_set_cursor(1, 4);
-				  lcd_printf_P(PSTR("%3d"), (int16_t)degHotend(active_extruder));
+		      lcd_display_message_fullscreen_P(_i("Load magnets and wait for the end to heat up"));
 					user_interaction_stage = 2;
 				}
 				break;
 			case 2:
-				if (fabs(degTargetHotend(active_extruder) - degHotend(active_extruder)) < 1) { 
+				if (!stage_2_has_reached_target_temperature && fabs(degTargetHotend(active_extruder) - degHotend(active_extruder)) < 5) { 
           stage_2_has_reached_target_temperature = true;
-          if (!stage_2_needs_to_beep) {
-		        lcd_display_message_fullscreen_P(_i("Press the button to extrude some filament"));
-            stage_2_needs_to_beep = true;
-          }
-				  if (lcd_clicked()) {
-		        lcd_display_message_fullscreen_P(_i("Remove extruded filament and press the button"));
-					  user_interaction_stage = 3;
-            // Start extruding some filament
-            current_position[E_AXIS] += 10;
-            plan_buffer_line_curposXYZE(2);
-          }
-				} 
-        if (!stage_2_has_reached_target_temperature) {
-				  lcd_set_cursor(1, 4);
-				  lcd_printf_P(PSTR("%3d"), (int16_t)degHotend(active_extruder));
+		      lcd_display_message_fullscreen_P(_i("Press the button to extrude some filament"));
+          // trigger a beep right away
+          counter_beep = 0;
+          // Turn the fans on, because we're getting ready to start printing again.
+          fanSpeed = previous_fan_speed;
         }
+        if (stage_2_has_reached_target_temperature && lcd_clicked()) {
+		      lcd_display_message_fullscreen_P(_i("Remove extruded filament and press the button"));
+					user_interaction_stage = 3;
+          // Start extruding some filament
+          current_position[E_AXIS] += 10;
+          plan_buffer_line_curposXYZE(3);
+				} 
+        // intentionally fall through
+      case 3:
+				lcd_set_cursor(4, 4);
+				lcd_printf_P(PSTR("%3d/%3d"), (int16_t)degHotend(active_extruder), (int16_t)degTargetHotend(active_extruder));
 				break;
 			}
 		  delay_keep_alive(4);
@@ -11970,7 +11970,6 @@ void perform_magnet_pause() {
 		lcd_display_message_fullscreen_P(_i("Resuming print"));
     // Move back to starting position
     do_blocking_move_to_z_last(saved_pos[X_AXIS], saved_pos[Y_AXIS], saved_pos[Z_AXIS]);
-    //lcd_return_to_status();
 	  lcd_update_enable(true);
 }
 
