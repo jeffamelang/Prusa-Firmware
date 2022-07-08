@@ -1,0 +1,330 @@
+Resuming print
+PINDA Heating
+Calibration done
+Calibrating Z
+Bed done
+Bed Heating
+Heating done.
+Heating
+M117 First layer cal.
+PID cal. finished
+PID cal.
+Print paused
+Print FAN
+Nozzle FAN
+MMU fails
+MMU load fails
+MMU power fails
+Total failures
+Fil. runouts
+Last print failures
+Power failures
+Runouts
+Crash
+Total
+Last print
+Ambient
+Dump memory
+Voltages
+Temperatures
+Belt status
+Sensor info
+Extruder info
+XYZ cal. details
+unknown
+MMU2 connected
+Date:
+to unload filament
+to load filament
+Press the knob
+Preheating to cut
+Preheating to eject
+Preheating to unload
+Preheating to load
+Cooldown
+Preheat the nozzle!
+ERROR:
+Filament extruding & with correct color?
+Autoloading filament is active, just press the knob and insert filament...
+Total filament
+Total print time
+Filament used
+Print time
+Y distance from min
+Left
+Right
+Measured skew
+Slight skew
+Severe skew
+[0;0] point offset
+Adjusting Z:
+Rear side [um]
+Front side[um]
+Right side[um]
+Left side [um]
+Set temperature:
+Temperature calibration failed
+Temperature calibration is finished and active. Temp. calibration can be disabled in menu Settings->Temp. cal.
+Fil. sensor
+Extruder
+Move Z
+Move Y
+Move X
+Crash detection can\x0abe turned on only in\x0aNormal mode
+WARNING:\x0aCrash detection\x0adisabled in\x0aStealth mode
+Autoloading filament available only when filament sensor is turned on...
+ERROR: Filament sensor is not responding, please check connection.
+Mode change in progress...
+Copy selected language?
+Select language
+Community made
+Calibrate
+Sheet %.7s\x0aZ offset: %+1.3f mm\x0a%cContinue\x0a%cStart from zero
+Please load filament first.
+Select filament:
+Filament
+>Cancel
+Running Wizard will delete current calibration results and start from the beginning. Continue?
+Preheating nozzle. Please wait.
+Loading filament
+Please insert filament into the extruder, then press the knob to load it.
+Please insert filament into the first tube of the MMU, then press the knob to load it.
+The printer will start printing a zig-zag line. Rotate the knob until you reach the optimal height. Check the pictures in the handbook (Calibration chapter).
+Select temperature which matches your material.
+Choose a filament for the First Layer Calibration and select it in the on-screen menu.
+Now I will calibrate distance between tip of the nozzle and heatbed surface.
+You can always resume the Wizard from Calibration -> Wizard.
+Please check our handbook and fix the problem. Then resume the Wizard by rebooting the printer.
+All is done. Happy printing!
+If you have additional steel sheets, calibrate their presets in Settings - HW Setup - Steel sheets.
+Please clean heatbed and then press the knob.
+Do you want to repeat last step to readjust distance between nozzle and heatbed?
+Select nozzle preheat temperature which matches your material.
+Is filament loaded?
+Now I will preheat nozzle for PLA.
+I will run z calibration now.
+Now remove the test print from steel sheet.
+Please remove shipping helpers first.
+I will run xyz calibration now. It will take approx. 12 mins.
+First, I will run the selftest to check most common assembly problems.
+Hi, I am your Original Prusa i3 printer. Would you like me to guide you through the setup process?
+Hi, I am your Original Prusa i3 printer. I will guide you through a short setup process, in which the Z-axis will be calibrated. Then, you will be ready to print.
+E-correct:
+Z-correct:
+Y-correct:
+X-correct:
+Cutter
+Model
+Strict
+Warn
+Checks
+Nozzle d.
+None
+Alphabet
+Sort
+Time
+SD card
+Select language
+RPi port
+Temp. cal.
+Lin. correction
+HW Setup
+F. autoload
+Disable steppers
+Move axis
+Temperature
+Temp. calibration
+Reset XYZ calibr.
+PID calibration
+Bed level correct
+Mesh Bed Leveling
+Calibrate Z
+Calibrate XYZ
+Selftest
+Belt test
+Wizard
+Load all
+Please pull out filament immediately
+Unloading filament
+Reset
+Rename
+First layer cal.
+Select
+Steel sheets
+Support
+Fail stats MMU
+Fail stats
+Statistics
+Calibration
+AutoLoad filament
+Cut filament
+Eject filament
+Unload filament
+Load to nozzle
+Load filament
+No SD card
+Print from SD
+Resume print
+Pause print
+Tune
+Preheat
+Live adjust Z
+Info screen
+Finishing movements
+Brightness
+Assist
+Silent
+Once
+Sound
+Loud
+MMU Mode
+Crash det.
+Stealth
+Normal
+Fans check
+Fil. sensor
+Change filament
+Flow
+Speed
+Magnets comp.
+N/A
+Z-probe nr.
+Mesh
+Timeout
+Mode
+Auto
+Dim
+Bright
+Level Dimmed
+Level Bright
+Fan speed
+Bed
+Nozzle
+Settings
+Print aborted
+Stop print
+Checking file
+File incomplete. Continue anyway?
+Refresh
+Main
+Waiting for nozzle and bed cooling
+Self test OK
+Self test start
+Print fan:
+Extruder fan:
+Calibrating home
+All correct
+Checking sensors
+Checking hotend
+Checking bed
+Checking Z axis
+Checking Y axis
+Checking X axis
+Checking endstops
+Card removed
+Off
+On
+Back
+Printer nozzle diameter differs from the G-code. Please check the value in settings. Print cancelled.
+Printer nozzle diameter differs from the G-code. Continue?
+MK3 firmware detected on MK3S printer
+FW crash detected! You can continue printing. Debug data available for analysis. Contact support to submit details.
+Blackout occurred. Recover print?
+Selftest will be run to calibrate accurate sensorless rehoming.
+There is still a need to make Z calibration. Please follow the manual, chapter First steps, section Calibration flow.
+Printer has not been calibrated yet. Please follow the manual, chapter First steps, section Calibration flow.
+Old settings found. Default PID, Esteps etc. will be set.
+Warning: both printer type and motherboard type changed.
+Warning: printer type changed.
+Warning: motherboard type changed.
+Crash detected.
+Some problem encountered, Z-leveling enforced ...
+G-code sliced for a different level. Continue?
+G-code sliced for a different level. Please re-slice the model again. Print cancelled.
+G-code sliced for a newer firmware. Please update the firmware. Print cancelled.
+G-code sliced for a newer firmware. Continue?
+G-code sliced for a different printer type. Continue?
+G-code sliced for a different printer type. Please re-slice the model again. Print cancelled.
+Press the knob to preheat nozzle and continue.
+Please press the knob to unload filament
+Remove old filament and press the knob to start loading new filament.
+and press the knob
+Insert filament
+Color not correct
+Filament not loaded
+Changed correctly?
+Loading color
+Change success!
+Please open idler and remove filament manually.
+Was filament unload successful?
+Please upgrade.
+New firmware version available:
+Waiting for PINDA probe cooling
+Choose extruder:
+Choose filament:
+No move.
+Stable ambient temperature 21-26C is needed a rigid stand is required.
+Please run XYZ calibration first.
+Wait for user...
+Heating disabled by safety timer.
+Recovering print
+Please wait
+STOPPED.
+Bed leveling failed. Sensor didn't trigger. Debris on nozzle? Waiting for reset.
+Please update firmware in your MMU2. Waiting for reset.
+MMU OK. Resuming...
+MMU OK. Resuming position...
+MMU OK. Resuming temperature...
+Fix the issue and then press button on MMU unit.
+Press the knob to resume nozzle temperature.
+MMU needs user attention.
+Cutting filament
+Please remove filament and then press the knob.
+Ejecting filament
+MMU load failed
+Sheet
+Yes
+No
+Not spinning
+Spinning
+Fan test
+Selftest failed
+False triggering
+Filament sensor
+Swapped
+Front/left fans
+Axis
+Axis length
+Loose pulley
+Left hotend fan?
+Front print fan?
+Endstop not hit
+Endstop
+Motor
+Endstops
+Wiring error
+Bed/Heater
+Not connected
+Heater/Thermistor
+Please check:
+Selftest error!
+XYZ calibration all right. Skew will be corrected automatically.
+XYZ calibration all right. X/Y axes are slightly skewed. Good job!
+XYZ calibration ok. X/Y axes are perpendicular. Congratulations!
+XYZ calibration compromised. Right front calibration point not reachable.
+XYZ calibration compromised. Front calibration points not reachable.
+XYZ calibration failed. Right front calibration point not reachable.
+XYZ calibration failed. Front calibration points not reachable.
+XYZ calibration failed. Please consult the manual.
+XYZ calibration failed. Bed calibration point was not found.
+Please place steel sheet on heatbed.
+Distance between tip of the nozzle and the bed surface has not been set yet. Please follow the manual, chapter First steps, section First layer calibration.
+Place a sheet of paper under the nozzle during the calibration of first 4 points. If the nozzle catches the paper, power off the printer immediately.
+Please remove steel sheet from heatbed.
+Is steel sheet on heatbed?
+Searching bed calibration point
+Measuring reference height of calibration point
+Please clean the nozzle for calibration. Click when done.
+Auto home
+Sorting files
+Some files will not be sorted. Max. No. of files in 1 folder for sorting is 100.  \
